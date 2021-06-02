@@ -1,0 +1,122 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <script src="tank.js"></script>
+    <script src="ball.js"></script>
+    <script src="obstacke.js"></script>
+    <script src="keys.js"></script>
+    <script type="text/javascript">
+        const AVAILABLE_KEYS =
+            [Keys.KEY_W,
+            Keys.KEY_S,
+            Keys.KEY_A,
+            Keys.KEY_D
+            ];
+
+        let _canvas;
+        let _context;
+        let _tank;
+        let _keypressed = {};
+        let _keyStates = {};
+
+        function clear() {
+            _context.clearRect(0, 0, _canvas.width, _canvas.height); let _backgroundImg = new Image();
+            _backgroundImg.src = "images/background.png";
+            _context.drawImage(_backgroundImg, 0, 0, _canvas.width, _canvas.height);
+        }
+
+        function init() {
+            _canvas = document.getElementById("canvas");
+            _context = _canvas.getContext("2d");
+            _tank = new Tank(_canvas.width, _canvas.height);
+            _tank.handleInput(_keyStates);
+        }
+
+        function draw() {
+            clear();
+
+            let _backgroundImg = new Image();
+            _backgroundImg.src = "images/background.png";
+            _context.drawImage(_backgroundImg, 0, 0, _canvas.width, _canvas.height);
+            // _context.drawImage(_backgroundImg, 0, 0, _canvas.width, _canvas.height);
+            for (let i = 0; i < _obstacles.length; i++) {
+                _obstacles[i].draw();
+            }
+            _tank.handleInput(_keyStates);
+            _tank.draw(_context);
+            
+        }
+
+        let _obstacles = [];
+        function update() {
+            _tank.handleInput(_keyStates);
+            let sample = document.getElementById("foobar");
+            sample.play();
+            if (_obstacles.length < 10)
+                _obstacles.push(new Obstacle(_canvas.width, _canvas.height, _context));
+
+            for (let i = 0; i < _obstacles.length; i++) {
+                let ob = _obstacles[i];
+                ob.update();
+            }
+            if (_obstacles.length > 0) {
+                _tank.update(_obstacles, false);
+            }
+            draw(); 
+
+            if (_tank.gameOver) {
+                clear();
+                _context.font = '40pt Calibri';
+                _context.fillStyle = 'red';
+                _context.fillText("Game Over ", 160, 160, 100);
+            }
+        }
+        function canvas_mousemove(e) {
+
+            var x = e.pageX - _canvas.offsetLeft;
+            var y = e.pageY - _canvas.offsetTop;
+            _tank.rotateCannon(x, y);
+        }
+        function canvas_mousedown(e) {
+            _tank.fire();
+        }
+        function canvas_keyDown(e) {
+                if (AVAILABLE_KEYS.indexOf(e.keyCode) != -1)
+                    _keyStates[e.keyCode] = true;
+            }
+            function canvas_keyUp(e) {
+                if (_keyStates[e.keyCode])
+                    _keyStates[e.keyCode] = false;
+            }
+
+        function doKeypress() {
+            if (_keypressed[Keys.KEY_W])
+                _tank.moveUp();
+            if (_keypressed[Keys.KEY_S])
+                _tank.moveDown();
+            if (_keypressed[Keys.KEY_A])
+                _tank.moveLeft();
+            if (_keypressed[Keys.KEY_D])
+                _tank.moveRight();
+            _tank.move();
+            draw();
+        }
+
+        window.onload = function () {
+            init();
+            _canvas.onkeydown = canvas_keyDown;
+            _canvas.onkeyup = canvas_keyUp;
+            _canvas.onmousemove = canvas_mousemove;
+            _canvas.onmousedown = canvas_mousedown;
+            window.setInterval(update, 50);
+        }
+    </script>
+</head>
+
+<body>
+    <audio id="foobar" src="images/sound.wav" preload="auto" allow="autoplay"></audio>
+    <canvas id="canvas" width="400" height="400" tabindex="1" style="border: 1px solid;cursor: crosshair"></canvas>
+</body>
+
+</html>
